@@ -63,5 +63,8 @@ java jar switch.book.store.svc-0.0.1-SNAPSHOT.jar
 preview app's endpoints documentation on your browser via url:
 http://localhost:8080/swagger-ui.html
 
+Architectural Design
+Reference...
+
 
 
