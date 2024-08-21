@@ -4,6 +4,7 @@ import com.book.store.svc.domains.book.enums.EGenre;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record BookRequest(@NotBlank(message = "Kindly provide a book title") String title,

@@ -49,13 +49,13 @@ public class TransactionRecordService {
 
     // call back payment transaction update for web transfers
     @Async
-    public void webTransactionCallBackUpdate(String providerTransactionReference, WebTransactionCallbackDto model) throws ServiceException {
+    public void webTransactionCallBackUpdate(String transactionReference, WebTransactionCallbackDto model) throws ServiceException {
         // find
-        var transactionOpt = transactionRepo.findByProviderTransactionReferenceAndPaymentChannel(providerTransactionReference, EPaymentChannel.WEB);
+        var transactionOpt = transactionRepo.findByProviderTransactionReferenceAndPaymentChannel(transactionReference, EPaymentChannel.WEB);
         if(transactionOpt.isEmpty()){
-            log.error(String.format("Transaction received with provider reference: %s which could not be found", providerTransactionReference));
+            log.error(String.format("Transaction received with provider reference: %s which could not be found", transactionReference));
             // perform other alerting functions.
-            throw new ServiceException(String.format("Transaction not found by provider reference %s", providerTransactionReference));
+            throw new ServiceException(String.format("Transaction not found by provider reference %s", transactionReference));
         }
 
         var transaction = transactionOpt.get();

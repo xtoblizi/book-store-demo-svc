@@ -50,10 +50,18 @@ public class BooksController {
         return bookService.findBooks(title, author, genre, publishDate, page, size);
     }
 
-    // Make a book a product.
+    @GetMapping("/products")
+    @ResponseStatus(HttpStatus.OK)
+    public Page<BookProduct> findProducts(@RequestParam(name = "page", defaultValue = "0")int page,
+                                   @RequestParam(name = "size", defaultValue = "20") int size) {
+        return bookProductService.findAllBookProducts(page, size);
+    }
+
+    // Make a book a product. One book can exist as multiple products.
+    // The product is what customer will purchase.
     @PostMapping("/product")
     @ResponseStatus(HttpStatus.CREATED)
     public BookProduct makeBookProduct(@Valid @RequestBody BookProductRequest request) throws ServiceException {
-        return bookProductService.save(request);
+        return bookProductService.createProduct(request);
     }
 }
