@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 public class BaseEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @JsonIgnore
     private String code;
 
     @Convert(converter = LocalDateTimeConverter.class)

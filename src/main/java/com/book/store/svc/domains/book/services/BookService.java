@@ -3,12 +3,14 @@ package com.book.store.svc.domains.book.services;
 import com.book.store.svc.commons.exceptions.ApiException;
 import com.book.store.svc.commons.exceptions.NotFoundException;
 import com.book.store.svc.commons.exceptions.ServiceException;
+import com.book.store.svc.commons.exceptions.ServiceValidationException;
 import com.book.store.svc.commons.utils.SortUtil;
 import com.book.store.svc.domains.book.db.models.Book;
+import com.book.store.svc.domains.book.db.models.BookProduct;
 import com.book.store.svc.domains.book.db.repos.BookRepo;
+import com.book.store.svc.domains.book.dtos.BookProductRequest;
 import com.book.store.svc.domains.book.dtos.BookRequest;
 import com.book.store.svc.domains.book.enums.EGenre;
-import com.book.store.svc.domains.book.services.AuthorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +18,7 @@ import org.hibernate.query.SortDirection;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Service
