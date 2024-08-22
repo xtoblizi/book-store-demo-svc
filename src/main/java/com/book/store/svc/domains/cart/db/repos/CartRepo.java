@@ -1,4 +1,4 @@
-package com.book.store.svc.domains.cart.repos;
+package com.book.store.svc.domains.cart.db.repos;
 
 import com.book.store.svc.domains.cart.db.models.Cart;
 import org.springframework.data.jpa.repository.JpaRepository;

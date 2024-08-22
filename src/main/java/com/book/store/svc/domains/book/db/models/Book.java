@@ -30,7 +30,6 @@ public class Book extends BaseEntity {
     private Author author;
 
     @Column(nullable = false)
-    @Convert(converter = LocalDateTimeConverter.class)
     private LocalDate publicationDate;
 
     public Book(String title, String isbn, Author author,

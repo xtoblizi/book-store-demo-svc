@@ -9,6 +9,7 @@ import com.book.store.svc.domains.book.db.repos.BookProductRepo;
 import com.book.store.svc.domains.book.dtos.BookProductRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.query.SortDirection;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -24,9 +25,10 @@ public class BookProductService{
     
     public BookProduct createProduct(BookProductRequest request) throws ServiceException {
         var book = bookService.findByCode(request.getBookCode());
-        var existingProduct = bookProductRepo.findByBookAndCategory(request.getBookCode(), request.getCategory());
-        if(Objects.nonNull(existingProduct)){
-            throw new ServiceValidationException("Book already exist as a product with these info {bookCode and category}");
+        request.setCategory(StringUtils.isBlank(request.getCategory())? null : request.getCategory());
+        var existingProductOpt = bookProductRepo.findByBookAndCategory(request.getBookCode(), request.getCategory());
+        if(existingProductOpt.isPresent()){
+            throw new ServiceValidationException("Book Product already exist as a product with these info {bookCode and category}");
         }
         BookProduct bookProduct = new BookProduct(book, request.getPrice(),
                 request.getCategory(), request.getDiscount(), request.getNote());

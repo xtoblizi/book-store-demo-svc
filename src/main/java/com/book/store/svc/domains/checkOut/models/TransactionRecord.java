@@ -66,11 +66,13 @@ public class TransactionRecord extends BaseEntity {
         this.checkOut = checkOut;
         this.customer = customer;
         this.requestAmount = requestAmount;
-        this.amount = requestAmount.add(this.vat);
-        this.paymentProvider = paymentProvider;
+        this.amount = requestAmount;
         this.message = "Processing";
         this.paymentStatus = EPaymentStatus.PENDING;
         this.requestTime = LocalDateTime.now();
+        this.setPaymentChannel(checkOut.getPaymentChannel());
+        this.requestTime = LocalDateTime.now();
+        this.transactionReference = UUID.randomUUID().toString();
     }
 
 }

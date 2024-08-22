@@ -20,7 +20,7 @@ public interface BookRepo extends JpaRepository<Book, UUID> {
     boolean existsByIsbn(String isbn);
 
     @Query("SELECT b FROM Book b WHERE " +
-            "(:title is null OR lower(b.title) LIKE lower(concat('%', concat(:name, '%')))) " +
+            "(:title is null OR lower(b.title) LIKE lower(concat('%', concat(:title, '%')))) " +
             "AND (:author is null OR ((lower(b.author.firstName) LIKE lower(concat('%', concat(:author, '%'))))) OR  (lower(b.author.firstName) LIKE lower(concat('%', concat(:author, '%'))))) " +
             "AND (:genre is null OR b.genre=:genre ) " +
             "AND (:publishDate is null OR (b.publicationDate >=:publishDate AND  b.publicationDate <=:publishDate))")
