@@ -9,8 +9,7 @@ import com.book.store.svc.domains.cart.db.models.Cart;
 import com.book.store.svc.domains.cart.db.models.CartItem;
 import com.book.store.svc.domains.cart.dtos.CartItemRequest;
 import com.book.store.svc.domains.cart.dtos.CreateCartRequest;
-import com.book.store.svc.domains.cart.repos.CartRepo;
-import com.book.store.svc.domains.cart.services.CartItemService;
+import com.book.store.svc.domains.cart.db.repos.CartRepo;
 import com.book.store.svc.domains.customer.services.CustomerService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +32,7 @@ public class CartService {
 
     @Transactional(rollbackOn = Exception.class)
     public Cart createCart(String customerCode, CreateCartRequest model) throws ServiceValidationException {
-        if (Objects.isNull(model)) throw new ServiceValidationException("Cart request model cannot be empty");
+        if (Objects.isNull(model) || model.getCartItems().isEmpty()) throw new ServiceValidationException("Cart request model cannot be empty");
 
         // validate customer Code
         var customer = customerService.findByCode(customerCode);
@@ -61,7 +60,7 @@ public class CartService {
 
         // update cart with total and total dispute info
         cart.setGrossTotal(computeTotalPrice(cartItems));
-        cart.setGrossTotal(computeTotalDiscount(cartItems));
+        cart.setTotalDiscount(computeTotalDiscount(cartItems));
         cart.setTotal(cart.getGrossTotal().subtract(cart.getTotalDiscount()));
         cartRepo.save(cart);
 
@@ -89,26 +88,37 @@ public class CartService {
             cartItemService.save(new CartItem(bookProduct, cart, cartItemRequest.getQuantity()));
         }
 
+        // retrieve updated cart-items
+        var updateCartedItem = cartItemService.findCartItemsByCartCode(cart.getCode());
+
         // retrieve afresh for sync cart items and return cart
-        return getCartDetails(cartCode);
+        cart.setCartItems(updateCartedItem);
+        resolveCartTotal(cart);
+        return cart;
     }
 
     @Transactional(rollbackOn = Exception.class)
     public Cart removeItemFromCart(String cartCode, String cartItemCode) throws NotFoundException{
-        cartRepo.findByCodeIncludeItems(cartCode)
+       var cart = cartRepo.findByCodeIncludeItems(cartCode)
                 .orElseThrow(()-> new NotFoundException(String.format("Cart could not be found with code", cartCode)));
         var cartITem = cartItemService.findByCode(cartItemCode);
 
         cartItemService.delete(cartITem);
+        cart.setTotalDiscount(cart.getTotalDiscount().subtract(
+                cartITem.getProduct().getDiscount()));
+        cart.setTotal(cart.getTotal().subtract(cartITem.getProduct().getPrice()
+                .multiply(BigDecimal.valueOf(cartITem.getQuantity()))));
+        cart.setGrossTotal(cart.getTotal().add(cart.getGrossTotal()));
+
+        cartRepo.save(cart);
+
         // retrieve card afresh
-        return getCartDetails(cartCode);
+        return cart;
     }
 
     public Cart getCartDetails(String cartCode) throws NotFoundException {
         var cart = cartRepo.findByCodeIncludeItems(cartCode).orElseThrow(()-> new NotFoundException(String.format("Cart could not be found with code", cartCode)));
-        cart.setTotalDiscount(computeTotalDiscount(cart.cartItems));
-        cart.setTotalDiscount(computeTotalPrice(cart.cartItems));
-
+        resolveCartTotal(cart);
         return cart;
     }
 
@@ -124,7 +134,8 @@ public class CartService {
         for (CartItem cartItem: cartItems){
             if(Objects.isNull(cartItem.getProduct()))
                 throw new RuntimeException("Cart item Product detail cannot be null when computing total price of cart items");
-            priceSum = priceSum.add(cartItem.getProduct().getPrice());
+            var price = cartItem.getProduct().getPrice();
+            priceSum = priceSum.add(price.multiply(BigDecimal.valueOf(cartItem.getQuantity())));
         }
         return DecimalUtil.standardRound(priceSum);
     }
@@ -137,5 +148,11 @@ public class CartService {
             discountSum = discountSum.add(cartItem.getProduct().getDiscount());
         }
         return DecimalUtil.standardRound(discountSum);
+    }
+
+    private void resolveCartTotal(Cart cart){
+        cart.setTotalDiscount(computeTotalDiscount(cart.cartItems));
+        cart.setGrossTotal(computeTotalPrice(cart.cartItems));
+        cart.setTotal(cart.getGrossTotal().subtract(cart.getTotalDiscount()));
     }
 }

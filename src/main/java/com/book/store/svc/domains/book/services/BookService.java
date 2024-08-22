@@ -29,6 +29,13 @@ public class BookService {
     private final AuthorService authorService;
 
     public Book save(BookRequest request) throws ServiceException {
+        if(StringUtils.isBlank(request.isbn())
+                || StringUtils.isBlank(request.title())
+                || StringUtils.isBlank(request.authorCode())
+                || StringUtils.isBlank(request.authorCode())
+                || request.genre() == null){
+            throw new ServiceValidationException("Kindly provide all field required for book creation");
+        }
         if(bookRepo.existsByIsbn(request.isbn())){
             throw new ApiException("Book already exist with this ISBN");
         }
